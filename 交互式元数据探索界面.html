@@ -1,0 +1,333 @@
+<!-- metadata_explorer.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>元数据探索器</title>
+    <style>
+        .explorer-container {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .sidebar {
+            background: #2c3e50;
+            color: white;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .main-content {
+            padding: 20px;
+            background: #ecf0f1;
+            overflow-y: auto;
+        }
+
+        .filter-group {
+            margin-bottom: 25px;
+        }
+
+        .filter-group h3 {
+            margin-bottom: 10px;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #3498db;
+        }
+
+        .checkbox-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            padding: 5px;
+            border-radius: 4px;
+            transition: background 0.2s;
+        }
+
+        .checkbox-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .checkbox-item input {
+            margin-right: 10px;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .data-table th {
+            background: #3498db;
+            color: white;
+            padding: 12px;
+            text-align: left;
+            position: sticky;
+            top: 0;
+        }
+
+        .data-table td {
+            padding: 12px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .data-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .status-complete { background: #2ecc71; }
+        .status-processing { background: #f39c12; }
+        .status-pending { background: #95a5a6; }
+
+        .search-box {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .stats-panel {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-box {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-box h4 {
+            margin: 0 0 10px 0;
+            color: #7f8c8d;
+            font-size: 12px;
+            text-transform: uppercase;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+    </style>
+</head>
+<body>
+    <div class="explorer-container">
+        <div class="sidebar">
+            <h2 style="margin-bottom: 30px;">🔍 筛选条件</h2>
+
+            <div class="filter-group">
+                <h3>物种</h3>
+                <div class="checkbox-group">
+                    <label class="checkbox-item">
+                        <input type="checkbox" checked> 拟南芥 (342)
+                    </label>
+                    <label class="checkbox-item">
+                        <input type="checkbox" checked> 水稻 (198)
+                    </label>
+                    <label class="checkbox-item">
+                        <input type="checkbox" checked> 玉米 (165)
+                    </label>
+                    <label class="checkbox-item">
+                        <input type="checkbox"> 小麦 (142)
+                    </label>
+                    <label class="checkbox-item">
+                        <input type="checkbox"> 番茄 (98)
+                    </label>
+                </div>
+            </div>
+
+            <div class="filter-group">
+                <h3>组织类型</h3>
+                <div class="checkbox-group">
+                    <label class="checkbox-item">
+                        <input type="checkbox" checked> 叶片 (28%)
+                    </label>
+                    <label class="checkbox-item">
+                        <input type="checkbox" checked> 根 (22%)
+                    </label>
+                    <label class="checkbox-item">
+                        <input type="checkbox"> 茎 (18%)
+                    </label>
+                    <label class="checkbox-item">
+                        <input type="checkbox"> 花 (12%)
+                    </label>
+                    <label class="checkbox-item">
+                        <input type="checkbox"> 种子 (8%)
+                    </label>
+                </div>
+            </div>
+
+            <div class="filter-group">
+                <h3>处理状态</h3>
+                <div class="checkbox-group">
+                    <label class="checkbox-item">
+                        <input type="checkbox" checked> <span class="status-indicator status-complete"></span>已完成 (62%)
+                    </label>
+                    <label class="checkbox-item">
+                        <input type="checkbox" checked> <span class="status-indicator status-processing"></span>处理中 (24%)
+                    </label>
+                    <label class="checkbox-item">
+                        <input type="checkbox"> <span class="status-indicator status-pending"></span>待处理 (12%)
+                    </label>
+                </div>
+            </div>
+
+            <div class="filter-group">
+                <h3>测序类型</h3>
+                <div class="checkbox-group">
+                    <label class="checkbox-item">
+                        <input type="checkbox" checked> MeRIP-seq (68%)
+                    </label>
+                    <label class="checkbox-item">
+                        <input type="checkbox" checked> m6A-seq (24%)
+                    </label>
+                    <label class="checkbox-item">
+                        <input type="checkbox"> miCLIP (8%)
+                    </label>
+                </div>
+            </div>
+
+            <button style="width: 100%; padding: 10px; background: #3498db; color: white; border: none; border-radius: 4px; cursor: pointer; margin-top: 20px;">
+                应用筛选条件
+            </button>
+        </div>
+
+        <div class="main-content">
+            <h1 style="margin-bottom: 20px;">植物RNA修饰元数据探索器</h1>
+
+            <input type="text" class="search-box" placeholder="搜索样本ID、物种、组织...">
+
+            <div class="stats-panel">
+                <div class="stat-box">
+                    <h4>当前筛选样本数</h4>
+                    <div class="stat-value">705</div>
+                </div>
+                <div class="stat-box">
+                    <h4>配对实验</h4>
+                    <div class="stat-value">571</div>
+                </div>
+                <div class="stat-box">
+                    <h4>修饰位点总数</h4>
+                    <div class="stat-value">1.4M</div>
+                </div>
+                <div class="stat-box">
+                    <h4>平均每个样本位点</h4>
+                    <div class="stat-value">1,986</div>
+                </div>
+            </div>
+
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>SRA ID</th>
+                        <th>物种</th>
+                        <th>组织</th>
+                        <th>处理</th>
+                        <th>配对状态</th>
+                        <th>Peaks数</th>
+                        <th>状态</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody id="data-table-body">
+                    <!-- 数据将通过JavaScript动态加载 -->
+                </tbody>
+            </table>
+
+            <div style="margin-top: 20px; display: flex; justify-content: space-between; align-items: center;">
+                <div>显示 1-20 共 705 条记录</div>
+                <div style="display: flex; gap: 5px;">
+                    <button style="padding: 5px 10px;">上一页</button>
+                    <button style="padding: 5px 10px; background: #3498db; color: white;">1</button>
+                    <button style="padding: 5px 10px;">2</button>
+                    <button style="padding: 5px 10px;">3</button>
+                    <button style="padding: 5px 10px;">...</button>
+                    <button style="padding: 5px 10px;">35</button>
+                    <button style="padding: 5px 10px;">下一页</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 模拟数据加载
+        const mockData = [
+            {sra: 'SRR1234567', species: '拟南芥', tissue: '叶片', treatment: 'm6A-IP', paired: '是', peaks: 2345, status: 'complete'},
+            {sra: 'SRR1234568', species: '拟南芥', tissue: '叶片', treatment: 'Input', paired: '是', peaks: '-', status: 'complete'},
+            {sra: 'SRR1234569', species: '水稻', tissue: '根', treatment: 'm6A-IP', paired: '是', peaks: 1876, status: 'processing'},
+            {sra: 'SRR1234570', species: '水稻', tissue: '根', treatment: 'Input', paired: '是', peaks: '-', status: 'processing'},
+            {sra: 'SRR1234571', species: '玉米', tissue: '茎', treatment: 'm6A-IP', paired: '否', peaks: 1543, status: 'pending'},
+            {sra: 'SRR1234572', species: '番茄', tissue: '果实', treatment: 'm6A-IP', paired: '是', peaks: 987, status: 'complete'},
+        ];
+
+        // 渲染表格
+        function renderTable(data) {
+            const tbody = document.getElementById('data-table-body');
+            tbody.innerHTML = '';
+
+            data.forEach(item => {
+                const row = document.createElement('tr');
+
+                const statusClass = item.status === 'complete' ? 'status-complete' :
+                                   item.status === 'processing' ? 'status-processing' : 'status-pending';
+
+                const statusText = item.status === 'complete' ? '已完成' :
+                                  item.status === 'processing' ? '处理中' : '待处理';
+
+                row.innerHTML = `
+                    <td><strong>${item.sra}</strong></td>
+                    <td>${item.species}</td>
+                    <td>${item.tissue}</td>
+                    <td>${item.treatment}</td>
+                    <td>${item.paired === '是' ? '✅ 已配对' : '❌ 未配对'}</td>
+                    <td>${item.peaks}</td>
+                    <td><span class="status-indicator ${statusClass}"></span>${statusText}</td>
+                    <td>
+                        <button style="padding: 3px 8px; margin-right: 5px; background: #3498db; color: white; border: none; border-radius: 3px; cursor: pointer;">查看</button>
+                        <button style="padding: 3px 8px; background: #2ecc71; color: white; border: none; border-radius: 3px; cursor: pointer;">下载</button>
+                    </td>
+                `;
+
+                tbody.appendChild(row);
+            });
+        }
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            renderTable(mockData);
+
+            // 添加交互功能
+            document.querySelectorAll('.checkbox-item input').forEach(checkbox => {
+                checkbox.addEventListener('change', () => {
+                    // 这里可以添加筛选逻辑
+                    console.log('筛选条件改变');
+                });
+            });
+        });
+    </script>
+</body>
+</html>

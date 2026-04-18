@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<title>植物数据页面</title>
+<style>
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+}
+
+/* 顶栏 */
+.topbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 60px;
+    background-color: #4CAF50;
+    color: white;
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    z-index: 1000;
+    gap: 10px;
+}
+.topbar img {
+    height: 40px;
+}
+.left-menu, .right-menu {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+}
+.left-menu a, .right-menu a {
+    color: white;
+    text-decoration: none;
+    font-weight: bold;
+}
+.left-menu a:hover, .right-menu a:hover {
+    text-decoration: underline;
+}
+.topbar .search-box {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+}
+.topbar .search-box input {
+    width: 60%;
+    max-width: 300px;
+    padding: 5px 10px;
+    border-radius: 3px;
+    border: none;
+}
+
+/* 固定侧边栏 */
+.sidebar {
+    position: fixed;
+    top: 70px; /* 顶栏下方 */
+    left: 20px;
+    width: 280px;
+    bottom: 20px;
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
+    padding: 15px;
+    border-radius: 5px;
+    box-shadow: 2px 2px 8px rgba(0,0,0,0.1);
+    overflow-y: auto;
+}
+.sidebar ul {
+    list-style: none;
+    padding-left: 20px;
+    margin: 5px 0;
+}
+.sidebar li {
+    margin: 3px 0;
+    cursor: pointer;
+    position: relative;
+}
+.sidebar li .toggle {
+    font-weight: bold;
+    margin-right: 5px;
+    cursor: pointer;
+}
+.sidebar li ul {
+    display: none;
+}
+
+/* 右侧内容区 */
+.content {
+    margin-left: 320px; /* 侧边栏宽度 + 边距 */
+    margin-top: 70px;
+    padding: 15px;
+}
+
+/* 统计图表区 */
+.stats {
+    height: 250px;
+    background-color: #e8f0fe;
+    border-radius: 5px;
+    margin-bottom: 15px;
+    padding: 10px;
+}
+
+/* 表格区 */
+.table-area {
+    background-color: #fff;
+    border-radius: 5px;
+    padding: 10px;
+    box-shadow: 2px 2px 8px rgba(0,0,0,0.1);
+}
+</style>
+</head>
+<body>
+
+<!-- 顶栏 -->
+<div class="topbar">
+    <img src="./PRMD2.0 (2).png" alt="Logo">
+    <div class="left-menu">
+        <a href="#">Home</a>
+        <a href="#">Browse</a>
+        <a href="#">Jbrowse</a>
+        <a href="#">Tools</a>
+        <a href="#">Download</a>
+    </div>
+    <div class="search-box">
+        <input type="text" placeholder="Search...">
+    </div>
+    <div class="right-menu">
+        <a href="#">Links</a>
+        <a href="#">Help</a>
+        <a href="#">Contact</a>
+    </div>
+</div>
+
+<!-- 侧边栏 -->
+<div class="sidebar">
+    <ul>
+        <li><span class="toggle">-</span>植物
+            <ul style="display: block;">
+                <li><span class="toggle">+</span>苔藓植物
+                    <ul>
+                        <li>P. patens - 小立碗藓</li>
+                        <li>Riccia fluitans L. - 漂浮钱苔</li>
+                    </ul>
+                </li>
+                <li><span class="toggle">+</span>裸子植物
+                    <ul>
+                        <li>Larix gmelinii - 落叶松</li>
+                        <li>Pinus pinaster - 海岸松（滨海松）</li>
+                    </ul>
+                </li>
+                <li><span class="toggle">+</span>被子植物（单子叶）
+                    <ul>
+                        <li>O. sativa / Oryza sativa - 水稻</li>
+                        <li>S. bicolor - 高粱</li>
+                        <li>Z. mays / Zea mays - 玉米</li>
+                        <li>P. fortunei - 泡桐</li>
+                        <li>Panicum virgatum - 柳枝稷</li>
+                    </ul>
+                </li>
+                <li><span class="toggle">-</span>被子植物（双子叶）
+                    <ul style="display: block;">
+                        <li>Ae. tauschii - 粗山羊草</li>
+                        <li>A. thaliana / Arabidopsis thaliana - 拟南芥</li>
+                        <li>B. rapa - 白菜（芸薹）</li>
+                        <li>Brassica napus - 油菜（甘蓝型油菜）</li>
+                        <li>F. vesca - 林地草莓</li>
+                        <li>G. max / Glycine max - 大豆</li>
+                        <li>G. arboreum - 亚洲棉（树棉）</li>
+                        <li>G. hirsutum / Gossypium hirsutumL - 陆地棉（高地棉）</li>
+                        <li>M. domestica - 苹果</li>
+                        <li>N. benthamiana / Nicotiana benthamiana - 本氏烟</li>
+                        <li>P. trichocarpa - 美洲黑杨</li>
+                        <li>P. vulgaris - 菜豆（普通菜豆）</li>
+                        <li>S. lycopersicum - 番茄</li>
+                        <li>T. aestivum / Triticum aestivum - 普通小麦</li>
+                        <li>T. dicoccoides - 二粒野生小麦</li>
+                        <li>Actinidia Lindl - 猕猴桃属</li>
+                        <li>Lycium barbarum - 枸杞（宁夏枸杞）</li>
+                        <li>Populus spp. - 杨属（多种杨树）</li>
+                        <li>Camellia sinensis - 茶树</li>
+                        <li>Arachis hypogaea L. - 花生</li>
+                        <li>Phyllostachys heterocycla f. pubescens - 毛竹</li>
+                        <li>Dianthus caryophyllus - 康乃馨</li>
+                        <li>Catalpa fargesii - 灰楸</li>
+                        <li>Mangifera indica - 芒果</li>
+                        <li>Cucumis sativus - 黄瓜</li>
+                        <li>Beta vulgaris - 甜菜</li>
+                        <li>Lactuca sativa - 莴苣（生菜）</li>
+                    </ul>
+                </li>
+            </ul>
+        </li>
+    </ul>
+</div>
+
+<!-- 右侧内容区 -->
+<div class="content">
+    <div class="stats">
+        <h3>统计图表</h3>
+        <p>这里可以放柱状图、折线图、饼图等可视化内容。</p>
+    </div>
+    <div class="table-area">
+        <h3>数据表格</h3>
+        <p>这里放 DataTables 或其他表格内容。</p>
+    </div>
+</div>
+
+<script>
+// 展开/收起功能
+document.querySelectorAll('.sidebar .toggle').forEach(function(toggle) {
+    toggle.addEventListener('click', function(e) {
+        const parentLi = e.target.parentElement;
+        const subUl = parentLi.querySelector('ul');
+        if (!subUl) return;
+        if (subUl.style.display === 'block') {
+            subUl.style.display = 'none';
+            e.target.textContent = '+';
+        } else {
+            subUl.style.display = 'block';
+            e.target.textContent = '-';
+        }
+    });
+});
+</script>
+
+</body>
+</html>
