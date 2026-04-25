@@ -1,64 +1,99 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import BrowseFilters from "../components/browse/BrowseFilters";
 import BrowseStatsPanel from "../components/browse/BrowseStatsPanel";
 import BrowseTable from "../components/browse/BrowseTable";
-import { browseRows } from "../data/mockBrowseData";
+import { getBrowseData, getBrowseStats } from "../api/browse";
+
+const PAGE_SIZE = 100;
 
 function Browse({ setPage, setSelectedBrowseRow, externalSearchKeyword = "" }) {
   const [filters, setFilters] = useState({
-    modification_type: "all",
-    method: "all",
     species: "all",
-    region: "all",
+    modification: "all",
+    method: "all",
+    location: "all",
     keyword: externalSearchKeyword,
   });
+  const [page, setPageNum] = useState(1);
+  const [loading, setLoading] = useState(false);
+  const [data, setData] = useState({ rows: [], pagination: { totalCount: 0, totalPages: 0 } });
+  const [stats, setStats] = useState({ totalPeaks: 0, locationDistribution: [] });
 
-  const filteredRows = useMemo(() => {
-    return browseRows.filter((row) => {
-      const keyword = filters.keyword.trim().toLowerCase();
-      const searchable = [row.gene_id, row.transcript_id, row.peak_id, row.species, row.tissue, row.motif].join(" ").toLowerCase();
-      return (
-        (filters.modification_type === "all" || row.modification_type === filters.modification_type) &&
-        (filters.method === "all" || row.method === filters.method) &&
-        (filters.species === "all" || row.species === filters.species) &&
-        (filters.region === "all" || row.region === filters.region) &&
-        (!keyword || searchable.includes(keyword))
-      );
-    });
-  }, [filters]);
+  // Sync external keyword
+  useEffect(() => {
+    if (externalSearchKeyword) {
+      setFilters((p) => ({ ...p, keyword: externalSearchKeyword }));
+    }
+  }, [externalSearchKeyword]);
 
-  const topMotifs = useMemo(() => {
-    const map = new Map();
-    filteredRows.forEach((row) => map.set(row.motif, (map.get(row.motif) || 0) + 1));
-    return [...map.entries()].map(([name, value]) => ({ name, value }));
-  }, [filteredRows]);
+  // Fetch data when filters or page change
+  const fetchData = useCallback(async () => {
+    setLoading(true);
+    try {
+      const [dataResult, statsResult] = await Promise.all([
+        getBrowseData({
+          page,
+          pageSize: PAGE_SIZE,
+          species: filters.species,
+          modification: filters.modification,
+          method: filters.method,
+          location: filters.location,
+          keyword: filters.keyword,
+        }),
+        getBrowseStats({
+          species: filters.species,
+          modification: filters.modification,
+          method: filters.method,
+          location: filters.location,
+          keyword: filters.keyword,
+        }),
+      ]);
+      setData(dataResult);
+      setStats(statsResult);
+    } catch (err) {
+      console.error("Failed to fetch browse data:", err);
+    } finally {
+      setLoading(false);
+    }
+  }, [page, filters]);
 
-  const speciesPie = useMemo(() => {
-    const map = new Map();
-    filteredRows.forEach((row) => map.set(row.species, (map.get(row.species) || 0) + 1));
-    return [...map.entries()].map(([name, value]) => ({ name, value }));
-  }, [filteredRows]);
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
-  const regionPie = useMemo(() => {
-    const map = new Map();
-    filteredRows.forEach((row) => map.set(row.region, (map.get(row.region) || 0) + 1));
-    return [...map.entries()].map(([name, value]) => ({ name, value }));
-  }, [filteredRows]);
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setPageNum(1);
+  }, [filters.species, filters.modification, filters.method, filters.location, filters.keyword]);
+
+  const { rows, pagination } = data;
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[280px_1fr]">
+    <div className="grid gap-6 xl:grid-cols-[300px_1fr]">
+      {/* Sidebar Filters */}
       <BrowseFilters filters={filters} setFilters={setFilters} />
 
-      <div className="space-y-6">
-        <BrowseStatsPanel speciesPie={speciesPie} regionPie={regionPie} topMotifs={topMotifs} />
+      {/* Main Content */}
+      <div className="min-w-0 space-y-6">
+        {/* Stats Panel */}
+        <BrowseStatsPanel
+          totalPeaks={stats.totalPeaks}
+          locationDistribution={stats.locationDistribution}
+        />
 
+        {/* Data Table */}
         <Card className="rounded-3xl border-0 shadow-sm">
-          <CardHeader className="flex flex-row items-center justify-between">
+          <CardHeader className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <CardTitle className="text-lg">Filtered records</CardTitle>
-              <CardDescription>{filteredRows.length} records</CardDescription>
+              <CardTitle className="text-lg">Peaks Records</CardTitle>
+              <CardDescription>
+                {pagination.totalCount.toLocaleString()} records total
+                {loading && <Loader2 className="ml-2 inline h-4 w-4 animate-spin" />}
+              </CardDescription>
             </div>
             <div className="flex flex-wrap gap-2">
               <Badge variant="secondary">Detail ready</Badge>
@@ -67,21 +102,58 @@ function Browse({ setPage, setSelectedBrowseRow, externalSearchKeyword = "" }) {
             </div>
           </CardHeader>
           <CardContent>
-            <BrowseTable
-              rows={filteredRows}
-              onViewDetail={(row) => {
-                setSelectedBrowseRow(row);
-                setPage("BrowseDetail");
-              }}
-              onOpenJBrowse={(row) => {
-                setSelectedBrowseRow(row);
-                setPage("JBrowse");
-              }}
-              onOpenAnnotation={(row) => {
-                setSelectedBrowseRow(row);
-                setPage("Annotation");
-              }}
-            />
+            {loading && rows.length === 0 ? (
+              <div className="flex items-center justify-center py-16">
+                <Loader2 className="h-8 w-8 animate-spin text-[#223e36]" />
+              </div>
+            ) : (
+              <>
+                <BrowseTable
+                  rows={rows}
+                  onViewDetail={(row) => {
+                    setSelectedBrowseRow(row);
+                    setPage("BrowseDetail");
+                  }}
+                  onOpenJBrowse={(row) => {
+                    setSelectedBrowseRow(row);
+                    setPage("JBrowse");
+                  }}
+                  onOpenAnnotation={(row) => {
+                    setSelectedBrowseRow(row);
+                    setPage("Annotation");
+                  }}
+                />
+
+                {/* Pagination */}
+                {pagination.totalPages > 1 && (
+                  <div className="mt-4 flex items-center justify-between">
+                    <span className="text-sm text-slate-500">
+                      Page {pagination.page} of {pagination.totalPages.toLocaleString()}
+                    </span>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="rounded-xl"
+                        disabled={page <= 1 || loading}
+                        onClick={() => setPageNum((p) => Math.max(1, p - 1))}
+                      >
+                        <ChevronLeft className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="rounded-xl"
+                        disabled={page >= pagination.totalPages || loading}
+                        onClick={() => setPageNum((p) => p + 1)}
+                      >
+                        <ChevronRight className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
           </CardContent>
         </Card>
       </div>

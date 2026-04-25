@@ -1,9 +1,10 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Filter } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { getBrowseFilters } from "@/api/browse";
 
 function FilterSelect({ label, value, onChange, items }) {
   return (
@@ -24,6 +25,24 @@ function FilterSelect({ label, value, onChange, items }) {
 }
 
 function BrowseFilters({ filters, setFilters }) {
+  const [filterOptions, setFilterOptions] = useState({
+    species: ["all"],
+    modifications: ["all"],
+    locations: ["all"],
+  });
+
+  useEffect(() => {
+    getBrowseFilters()
+      .then((data) => {
+        setFilterOptions({
+          species: ["all", ...data.species],
+          modifications: ["all", ...data.modifications],
+          locations: ["all", ...data.locations],
+        });
+      })
+      .catch((err) => console.error("Failed to load filters:", err));
+  }, []);
+
   return (
     <Card className="sticky top-28 h-fit rounded-3xl border-0 shadow-sm">
       <CardHeader>
@@ -36,15 +55,21 @@ function BrowseFilters({ filters, setFilters }) {
           <Input
             value={filters.keyword}
             onChange={(e) => setFilters((p) => ({ ...p, keyword: e.target.value }))}
-            placeholder="gene / motif / species / peak / tissue"
+            placeholder="gene / peak / species / location"
             className="rounded-2xl"
           />
         </div>
         <FilterSelect
+          label="Species"
+          value={filters.species}
+          onChange={(v) => setFilters((p) => ({ ...p, species: v }))}
+          items={filterOptions.species}
+        />
+        <FilterSelect
           label="Modification type"
-          value={filters.modification_type}
-          onChange={(v) => setFilters((p) => ({ ...p, modification_type: v }))}
-          items={["all", "m6A"]}
+          value={filters.modification}
+          onChange={(v) => setFilters((p) => ({ ...p, modification: v }))}
+          items={filterOptions.modifications}
         />
         <FilterSelect
           label="Method"
@@ -53,26 +78,20 @@ function BrowseFilters({ filters, setFilters }) {
           items={["all", "MeRIP-seq"]}
         />
         <FilterSelect
-          label="Species"
-          value={filters.species}
-          onChange={(v) => setFilters((p) => ({ ...p, species: v }))}
-          items={["all", "Arabidopsis thaliana", "Oryza sativa"]}
-        />
-        <FilterSelect
-          label="Region"
-          value={filters.region}
-          onChange={(v) => setFilters((p) => ({ ...p, region: v }))}
-          items={["all", "5UTR", "3UTR", "gene body"]}
+          label="Region (Location)"
+          value={filters.location}
+          onChange={(v) => setFilters((p) => ({ ...p, location: v }))}
+          items={filterOptions.locations}
         />
         <Button
           variant="outline"
           className="w-full rounded-2xl"
           onClick={() =>
             setFilters({
-              modification_type: "all",
-              method: "all",
               species: "all",
-              region: "all",
+              modification: "all",
+              method: "all",
+              location: "all",
               keyword: "",
             })
           }
