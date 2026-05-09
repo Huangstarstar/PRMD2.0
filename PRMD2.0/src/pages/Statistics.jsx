@@ -21,7 +21,7 @@ function ChartCard({ title, description, children }) {
 function Statistics() {
   return (
     <div className="space-y-6">
-      <SectionHeader title="Statistics" description="当前为前端静态占位版本，后续可直接替换为真实统计接口。" />
+      <SectionHeader title="Statistics" description="Static frontend version; will be replaced with real statistics API endpoints." />
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {statsCards.map((item) => (
@@ -35,7 +35,7 @@ function Statistics() {
       </div>
 
       <div className="grid gap-6 xl:grid-cols-2">
-        <ChartCard title="Modification type distribution" description="Hover 查看占位说明">
+        <ChartCard title="Modification type distribution" description="Distribution of modification types across the database">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={modificationDist}>
               <CartesianGrid strokeDasharray="3 3" />
@@ -46,7 +46,7 @@ function Statistics() {
             </BarChart>
           </ResponsiveContainer>
         </ChartCard>
-        <ChartCard title="Records by species" description="柱状图占位">
+        <ChartCard title="Records by species" description="Number of records per plant species">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={speciesDist}>
               <CartesianGrid strokeDasharray="3 3" />
@@ -57,7 +57,7 @@ function Statistics() {
             </BarChart>
           </ResponsiveContainer>
         </ChartCard>
-        <ChartCard title="Sequencing method composition" description="占比图">
+        <ChartCard title="Sequencing method composition" description="Proportion of different sequencing methods">
           <ResponsiveContainer width="100%" height="100%">
             <RePieChart>
               <Pie data={methodDist} dataKey="value" nameKey="name" outerRadius={100}>
@@ -83,7 +83,7 @@ function Statistics() {
       <Card className="rounded-3xl border-0 shadow-sm">
         <CardHeader>
           <CardTitle>Motif enrichment summary</CardTitle>
-          <CardDescription>卡片 + 说明为主，鼠标移动可查看描述</CardDescription>
+          <CardDescription>Click or hover on each motif card to view its detailed description</CardDescription>
         </CardHeader>
         <CardContent className="grid gap-4 md:grid-cols-3">
           {motifSummary.map((item) => (

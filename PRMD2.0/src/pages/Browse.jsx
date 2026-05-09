@@ -8,7 +8,7 @@ import BrowseStatsPanel from "../components/browse/BrowseStatsPanel";
 import BrowseTable from "../components/browse/BrowseTable";
 import { getBrowseData, getBrowseStats } from "../api/browse";
 
-const PAGE_SIZE = 100;
+const PAGE_SIZE = 50;
 
 function Browse({ setPage, setSelectedBrowseRow, externalSearchKeyword = "" }) {
   const [filters, setFilters] = useState({

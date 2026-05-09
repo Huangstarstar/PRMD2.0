@@ -28,6 +28,7 @@ function BrowseFilters({ filters, setFilters }) {
   const [filterOptions, setFilterOptions] = useState({
     species: ["all"],
     modifications: ["all"],
+    methods: ["all"],
     locations: ["all"],
   });
 
@@ -35,9 +36,10 @@ function BrowseFilters({ filters, setFilters }) {
     getBrowseFilters()
       .then((data) => {
         setFilterOptions({
-          species: ["all", ...data.species],
-          modifications: ["all", ...data.modifications],
-          locations: ["all", ...data.locations],
+          species: ["all", ...(data.species || [])],
+          modifications: ["all", ...(data.modifications || [])],
+          methods: ["all", ...(data.methods || [])],
+          locations: ["all", ...(data.locations || [])],
         });
       })
       .catch((err) => console.error("Failed to load filters:", err));
@@ -47,11 +49,11 @@ function BrowseFilters({ filters, setFilters }) {
     <Card className="sticky top-28 h-fit rounded-3xl border-0 shadow-sm">
       <CardHeader>
         <CardTitle className="flex items-center gap-2"><Filter className="h-5 w-5 text-[#223e36]" /> Browse Filters</CardTitle>
-        <CardDescription>支持组合筛选</CardDescription>
+        <CardDescription>Multi-condition combined filtering</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="space-y-2">
-          <label className="text-sm font-medium">关键词</label>
+          <label className="text-sm font-medium">Keyword</label>
           <Input
             value={filters.keyword}
             onChange={(e) => setFilters((p) => ({ ...p, keyword: e.target.value }))}
@@ -75,7 +77,7 @@ function BrowseFilters({ filters, setFilters }) {
           label="Method"
           value={filters.method}
           onChange={(v) => setFilters((p) => ({ ...p, method: v }))}
-          items={["all", "MeRIP-seq"]}
+          items={filterOptions.methods}
         />
         <FilterSelect
           label="Region (Location)"

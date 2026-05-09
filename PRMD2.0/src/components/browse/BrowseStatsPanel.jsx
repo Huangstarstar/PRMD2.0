@@ -53,7 +53,7 @@ function BrowseStatsPanel({ totalPeaks, locationDistribution }) {
             <PieChart className="h-5 w-5 text-[#223e36]" /> 
             Location Breakdown
           </CardTitle>
-          <CardDescription>各区域Peaks数量及占比</CardDescription>
+          <CardDescription>Peak count and proportion by genomic region</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-3">

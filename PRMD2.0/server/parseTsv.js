@@ -5,7 +5,7 @@ import { fileURLToPath } from "url";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const tsvPath = path.resolve(
   __dirname,
-  "../../../当前ath数据/ath_merged_annotated_sample.tsv"
+  "../../../ath_data/ath_merged_annotated_sample.tsv"
 );
 
 /**

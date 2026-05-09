@@ -7,204 +7,21 @@ import crypto from "crypto";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
-const PORT = 3001;
+const PORT = 3002;
 
 app.use(cors());
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 
-// In-memory job store for tools
+// In-memory job store (in production, use a database)
 const jobs = new Map();
 
-const tsvPath = path.resolve(
-  __dirname,
-  "../../../当前ath数据/ath_merged_annotated_sample.tsv"
-);
-
-// ==================== In-memory cache ====================
-// TSV is 3M+ rows — avoid re-reading on every request
-let tsvCache = null; // { headers: string[], parsedRows: { [header]: value }[] }
-let tsvLoadTime = 0;
-
-function loadTsvCache() {
-  if (tsvCache) return tsvCache;
-
-  console.log("[cache] Loading TSV file into memory…");
-  const t0 = Date.now();
-  const fileContent = fs.readFileSync(tsvPath, "utf-8");
-  const lines = fileContent.split("\n").filter((line) => line.trim() !== "");
-  const headers = lines[0].split("\t");
-
-  const parsedRows = [];
-  for (let i = 1; i < lines.length; i++) {
-    const values = lines[i].split("\t");
-    const row = {};
-    headers.forEach((h, j) => {
-      row[h] = values[j] || "";
-    });
-    parsedRows.push(row);
-  }
-
-  tsvCache = { headers, parsedRows };
-  tsvLoadTime = Date.now() - t0;
-  console.log(`[cache] Loaded ${parsedRows.length.toLocaleString()} rows in ${tsvLoadTime}ms`);
-  return tsvCache;
-}
-
-/**
- * Apply filters to an array of parsed rows
- * Returns filtered array (mutates nothing)
- */
-function applyFilters(rows, { species, modification, method, location, keyword }) {
-  let filtered = rows;
-
-  if (species && species !== "all") {
-    filtered = filtered.filter((r) => r.Species === species);
-  }
-  if (modification && modification !== "all") {
-    filtered = filtered.filter((r) => r.Modification === modification);
-  }
-  if (method && method !== "all") {
-    // "Method" maps to "Tool" column in the TSV
-    filtered = filtered.filter((r) => r.Tool === method);
-  }
-  if (location && location !== "all") {
-    filtered = filtered.filter((r) => r.Location === location);
-  }
-  if (keyword && keyword.trim()) {
-    const kw = keyword.trim().toLowerCase();
-    filtered = filtered.filter((r) => {
-      // Search across all fields
-      return Object.values(r).some((v) =>
-        String(v).toLowerCase().includes(kw)
-      );
-    });
-  }
-
-  return filtered;
-}
-
-/**
- * Format a raw row for the API response (add id)
- */
-function formatRow(row, id) {
-  return { id, ...row };
-}
-
 // ============================================================
-// GET /api/browse/data — Paginated data with filters
-// ============================================================
-app.get("/api/browse/data", (req, res) => {
-  try {
-    const {
-      page = "1",
-      pageSize = "100",
-      species,
-      modification,
-      method,
-      location,
-      keyword,
-    } = req.query;
-
-    const pageNum = Math.max(1, parseInt(page, 10) || 1);
-    const pageSizeNum = Math.min(500, Math.max(1, parseInt(pageSize, 10) || 100));
-    const { parsedRows } = loadTsvCache();
-
-    const filtered = applyFilters(parsedRows, {
-      species, modification, method, location, keyword,
-    });
-
-    const totalCount = filtered.length;
-    const totalPages = Math.ceil(totalCount / pageSizeNum) || 1;
-    const startIdx = (pageNum - 1) * pageSizeNum;
-    const pageRows = filtered.slice(startIdx, startIdx + pageSizeNum);
-    const rows = pageRows.map((r, i) => formatRow(r, startIdx + i + 1));
-
-    res.json({
-      rows,
-      pagination: {
-        page: pageNum,
-        pageSize: pageSizeNum,
-        totalCount,
-        totalPages,
-      },
-    });
-  } catch (error) {
-    console.error("Error in /api/browse/data:", error);
-    res.status(500).json({ error: "Failed to read data file" });
-  }
-});
-
-// ============================================================
-// GET /api/browse/stats — Total peaks & location distribution
-// ============================================================
-app.get("/api/browse/stats", (req, res) => {
-  try {
-    const { species, modification, method, location, keyword } = req.query;
-    const { parsedRows } = loadTsvCache();
-
-    const filtered = applyFilters(parsedRows, {
-      species, modification, method, location, keyword,
-    });
-
-    // Location distribution
-    const locationMap = new Map();
-    filtered.forEach((r) => {
-      const loc = r.Location || "unknown";
-      locationMap.set(loc, (locationMap.get(loc) || 0) + 1);
-    });
-
-    const locationDistribution = [...locationMap.entries()]
-      .map(([name, value]) => ({ name, value }))
-      .sort((a, b) => b.value - a.value);
-
-    res.json({
-      totalPeaks: filtered.length,
-      locationDistribution,
-    });
-  } catch (error) {
-    console.error("Error in /api/browse/stats:", error);
-    res.status(500).json({ error: "Failed to read stats" });
-  }
-});
-
-// ============================================================
-// GET /api/browse/filters — Unique values for dropdowns
-// ============================================================
-app.get("/api/browse/filters", (req, res) => {
-  try {
-    const { parsedRows } = loadTsvCache();
-    const speciesSet = new Set();
-    const modificationSet = new Set();
-    const toolSet = new Set();
-    const locationSet = new Set();
-
-    // Scan first 50000 rows for representative filter values
-    const sampleRows = parsedRows.slice(0, 50000);
-    sampleRows.forEach((r) => {
-      if (r.Species) speciesSet.add(r.Species);
-      if (r.Modification) modificationSet.add(r.Modification);
-      if (r.Tool) toolSet.add(r.Tool);
-      if (r.Location) locationSet.add(r.Location);
-    });
-
-    res.json({
-      species: [...speciesSet].sort(),
-      modifications: [...modificationSet].sort(),
-      methods: [...toolSet].sort(),
-      locations: [...locationSet].sort(),
-    });
-  } catch (error) {
-    console.error("Error in /api/browse/filters:", error);
-    res.status(500).json({ error: "Failed to read filters" });
-  }
-});
-
-// ============================================================
-// TOOLS API - RMlevelDiff
+// RMlevelDiff API
 // ============================================================
 app.get("/api/tools/rmleveldiff/samples", (req, res) => {
   const { species } = req.query;
+  // Mock sample list based on species
   const sampleMap = {
     ath: ["SRX19027089_SRX19027101", "SRX19027090_SRX19027102", "SRX19027091_SRX19027103", "SRX19027092_SRX19027104", "SRX19027093_SRX19027105"],
     osa: ["SRX19027101_SRX19027111", "SRX19027102_SRX19027112", "SRX19027103_SRX19027113"],
@@ -226,6 +43,7 @@ app.post("/api/tools/rmleveldiff/submit", (req, res) => {
     params: { species, groupA, groupB, software, foldChange, pvalue },
     createdAt: new Date().toISOString(),
   });
+  // Simulate async processing
   setTimeout(() => {
     const job = jobs.get(jobId);
     if (job) {
@@ -254,7 +72,7 @@ app.get("/api/tools/rmleveldiff/results", (req, res) => {
 });
 
 // ============================================================
-// TOOLS API - RMplantVar
+// RMplantVar API
 // ============================================================
 app.post("/api/tools/rmplantvar/submit", (req, res) => {
   const { species, software, email } = req.body;
@@ -294,7 +112,7 @@ app.get("/api/tools/rmplantvar/results", (req, res) => {
 });
 
 // ============================================================
-// TOOLS API - RNAmodNet
+// RNAmodNet API
 // ============================================================
 app.get("/api/tools/rnamodnet/genes", (req, res) => {
   const { species } = req.query;
@@ -310,18 +128,36 @@ app.get("/api/tools/rnamodnet/genes", (req, res) => {
 app.get("/api/tools/rnamodnet/graph", (req, res) => {
   const { species, gene } = req.query;
   if (!gene) return res.status(400).json({ error: "Gene parameter required" });
-  const relatedGenes = [gene, `REL_${gene}_1`, `REL_${gene}_2`, `REL_${gene}_3`, `REL_${gene}_4`, `REL_${gene}_5`];
-  const nodes = relatedGenes.map((id, i) => ({ id, label: id, group: i === 0 ? "query" : "related" }));
-  const edges = relatedGenes.slice(1).map((target) => ({ source: gene, target, weight: Math.random().toFixed(3) }));
+  // Generate mock co-methylation network
+  const relatedGenes = [
+    gene,
+    `REL_${gene}_1`,
+    `REL_${gene}_2`,
+    `REL_${gene}_3`,
+    `REL_${gene}_4`,
+    `REL_${gene}_5`,
+  ];
+  const nodes = relatedGenes.map((id, i) => ({
+    id,
+    label: id,
+    group: i === 0 ? "query" : "related",
+  }));
+  const edges = relatedGenes.slice(1).map((target) => ({
+    source: gene,
+    target,
+    weight: Math.random().toFixed(3),
+  }));
   res.json({ nodes, edges });
 });
 
 // ============================================================
-// TOOLS API - BLAST
+// BLAST API
 // ============================================================
 app.post("/api/tools/blast/submit", (req, res) => {
   const { program, database, querySeq, evalue, matrix } = req.body;
-  if (!querySeq) return res.status(400).json({ error: "Query sequence is required" });
+  if (!querySeq) {
+    return res.status(400).json({ error: "Query sequence is required" });
+  }
   const jobId = `BLAST_${crypto.randomBytes(8).toString("hex")}_${Date.now()}`;
   jobs.set(jobId, {
     tool: "blast",
@@ -329,15 +165,34 @@ app.post("/api/tools/blast/submit", (req, res) => {
     params: { program, database, querySeq, evalue, matrix },
     createdAt: new Date().toISOString(),
   });
+  // Simulate BLAST search
   setTimeout(() => {
     const job = jobs.get(jobId);
     if (job) {
       job.status = "completed";
       job.results = {
         results: [
-          { id: "MTA70_ARATH", description: "mRNA adenosine methylase MTA (EC 2.1.1.62) - Arabidopsis thaliana", evalue: "2e-45", score: 185, identity: 78.5 },
-          { id: "MTA70_ORYSJ", description: "mRNA adenosine methylase MTA (EC 2.1.1.62) - Oryza sativa", evalue: "5e-38", score: 152, identity: 72.1 },
-          { id: "MTA70_MAIZE", description: "mRNA adenosine methylase MTA (EC 2.1.1.62) - Zea mays", evalue: "1e-35", score: 143, identity: 70.3 },
+          {
+            id: "MTA70_ARATH",
+            description: "mRNA adenosine methylase MTA (EC 2.1.1.62) - Arabidopsis thaliana",
+            evalue: "2e-45",
+            score: 185,
+            identity: 78.5,
+          },
+          {
+            id: "MTA70_ORYSJ",
+            description: "mRNA adenosine methylase MTA (EC 2.1.1.62) - Oryza sativa",
+            evalue: "5e-38",
+            score: 152,
+            identity: 72.1,
+          },
+          {
+            id: "MTA70_MAIZE",
+            description: "mRNA adenosine methylase MTA (EC 2.1.1.62) - Zea mays",
+            evalue: "1e-35",
+            score: 143,
+            identity: 70.3,
+          },
         ],
       };
     }
@@ -354,12 +209,13 @@ app.get("/api/tools/blast/results", (req, res) => {
 });
 
 // ============================================================
-// Generic download endpoint for tools
+// Generic download endpoint
 // ============================================================
 app.get("/api/tools/:tool/download/:jobId/:filename", (req, res) => {
   const { tool, jobId, filename } = req.params;
   const job = jobs.get(jobId);
   if (!job) return res.status(404).json({ error: "Job not found" });
+  // Generate mock file content
   const content = `# ${tool} results for job ${jobId}\n# Generated at ${job.createdAt}\n\n# This is a placeholder result file.\n# In production, this would contain actual analysis results.\n`;
   res.setHeader("Content-Type", "text/plain");
   res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
@@ -374,5 +230,5 @@ app.get("/api/tools/health", (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`PRMD2.0 API server running on http://localhost:${PORT}`);
+  console.log(`Tools API server running on http://localhost:${PORT}`);
 });

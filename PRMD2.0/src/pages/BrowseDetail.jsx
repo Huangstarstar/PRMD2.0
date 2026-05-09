@@ -9,7 +9,7 @@ function BrowseDetail({ row, setPage }) {
     return (
       <EmptyState
         title="No record selected"
-        description="详情页内容待定，当前先保证可进入并承接 Browse 行级操作。"
+        description="Detail page content pending; currently supports entry and lineage from Browse row-level operations."
         actionLabel="Back to Browse"
         onAction={() => setPage("Browse")}
       />
@@ -19,13 +19,13 @@ function BrowseDetail({ row, setPage }) {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <SectionHeader title="Browse Detail" description="详情页内容待定，当前先保证可进入并承接 Browse 行级操作。" />
+        <SectionHeader title="Browse Detail" description="Detail page content pending; currently supports entry and lineage from Browse row-level operations." />
         <Button variant="outline" onClick={() => setPage("Browse")}>Back</Button>
       </div>
       <Card className="rounded-3xl border-0 shadow-sm">
         <CardHeader>
           <CardTitle>{row.gene_id} / {row.transcript_id}</CardTitle>
-          <CardDescription>可在后续替换为真正的基因级详情结构</CardDescription>
+          <CardDescription>Will be replaced with full gene-level detail structure</CardDescription>
         </CardHeader>
         <CardContent className="grid gap-4 md:grid-cols-2">
           {[

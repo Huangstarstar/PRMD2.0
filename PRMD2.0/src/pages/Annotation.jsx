@@ -9,7 +9,7 @@ import { annotationEnrichment, expressionHeatmapRows } from "../data/mockAnnotat
 function Annotation() {
   return (
     <div className="space-y-6">
-      <SectionHeader title="Annotation" description="读取预计算结果，当前按 GO / KEGG / Reactome、表达热图、基因家族与联动图结构组织。" />
+      <SectionHeader title="Annotation" description="Precomputed annotation results organized by GO / KEGG / Reactome enrichment, expression heatmaps, gene families and association networks." />
 
       <Tabs defaultValue="enrichment" className="space-y-6">
         <TabsList className="flex h-auto flex-wrap gap-2 rounded-2xl bg-transparent p-0">
@@ -29,7 +29,7 @@ function Annotation() {
             <Card className="rounded-3xl border-0 shadow-sm">
               <CardHeader>
                 <CardTitle>GO / KEGG / Reactome enrichment</CardTitle>
-                <CardDescription>前端先用预计算结果示意</CardDescription>
+                <CardDescription>Precomputed enrichment results overview</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 {annotationEnrichment.map((item) => (
@@ -50,7 +50,7 @@ function Annotation() {
               <CardContent className="space-y-3">
                 <Button className="w-full rounded-2xl bg-[#223e36] hover:bg-[#1b312b]">Download result table</Button>
                 <Button variant="outline" className="w-full rounded-2xl">Download figure</Button>
-                <div className="rounded-2xl bg-slate-50 p-4 text-sm leading-7 text-slate-600">当前设定为读取预计算结果，不提供用户上传；后端接通后可替换为真实下载链接。</div>
+                <div className="rounded-2xl bg-slate-50 p-4 text-sm leading-7 text-slate-600">Currently reading precomputed results without user upload; will link to real download endpoints once the backend is connected.</div>
               </CardContent>
             </Card>
           </div>
@@ -60,7 +60,7 @@ function Annotation() {
           <Card className="rounded-3xl border-0 shadow-sm">
             <CardHeader>
               <CardTitle>RNA-seq expression heatmap</CardTitle>
-              <CardDescription>修饰酶表达统计占位区</CardDescription>
+              <CardDescription>Modification enzyme expression statistics</CardDescription>
             </CardHeader>
             <CardContent className="overflow-x-auto">
               <div className="min-w-[680px] rounded-2xl border border-slate-200">
@@ -91,7 +91,7 @@ function Annotation() {
             <Card className="rounded-3xl border-0 shadow-sm">
               <CardHeader>
                 <CardTitle>Gene family browser</CardTitle>
-                <CardDescription>浏览已有物种 / 家族结果</CardDescription>
+                <CardDescription>Browse available species and family results</CardDescription>
               </CardHeader>
               <CardContent className="space-y-3">
                 {["Writers family overview", "Readers family overview", "Erasers family overview"].map((item) => (
@@ -110,7 +110,7 @@ function Annotation() {
           <Card className="rounded-3xl border-0 shadow-sm">
             <CardHeader>
               <CardTitle>Network / association view</CardTitle>
-              <CardDescription>后续可承接 RNAmodNet 或 Browse / Annotation 联动图</CardDescription>
+              <CardDescription>Will support RNAmodNet or Browse / Annotation linked networks</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="flex min-h-[340px] items-center justify-center rounded-3xl border border-dashed border-slate-300 bg-slate-50 text-slate-500">Network graph placeholder</div>

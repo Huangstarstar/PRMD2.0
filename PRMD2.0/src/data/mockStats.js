@@ -1,8 +1,8 @@
 export const statsCards = [
   { label: "Modification types", value: "08" },
-  { label: "Plant species", value: "XX" },
-  { label: "MeRIP-seq samples", value: "XX" },
-  { label: "Modification sites", value: "XX万+" },
+  { label: "Plant species", value: "30" },
+  { label: "MeRIP-seq samples", value: "1,125" },
+  { label: "Modification sites", value: "6M+" },
 ];
 
 export const modificationDist = [
@@ -41,7 +41,7 @@ export const motifSummary = [
   { name: "GAACT", desc: "Prominent in rice-related orthologous records" },
 ];
 
-export const toolsMenu = ["RMlevelDiff", "RMplantVar", "RNAmodNet", "Blast", "GeneEditor"];
+export const toolsMenu = ["RMlevelDiff", "RMplantVar", "RNAmodNet", "Blast", "GeneEditor", "RetrieveResults"];
 
 export const topNav = ["Home", "Browse", "Annotation", "JBrowse", "Tools", "Download", "Links", "Statistics", "Help", "Contact", "Search"];
 

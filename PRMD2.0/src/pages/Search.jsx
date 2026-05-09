@@ -12,7 +12,7 @@ function Search({ setSearchQuery, navigateToSearchResults }) {
       <Card className="rounded-3xl border-0 shadow-sm">
         <CardHeader>
           <CardTitle className="flex items-center gap-2"><SearchIcon className="h-5 w-5 text-[#223e36]" /> Search database content</CardTitle>
-          <CardDescription>支持搜索 gene ID、motif、species、peak ID、tissue。</CardDescription>
+          <CardDescription>Search by gene ID, motif, species, peak ID and tissue keywords.</CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-4 md:flex-row">
           <Input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search by gene ID / motif / species / peak ID / tissue" className="rounded-2xl" />

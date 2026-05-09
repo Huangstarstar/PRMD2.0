@@ -18,6 +18,7 @@ import RMplantVar from "./pages/tools/RMplantVar";
 import RNAmodNet from "./pages/tools/RNAmodNet";
 import Blast from "./pages/tools/Blast";
 import GeneEditor from "./pages/tools/GeneEditor";
+import RetrieveResults from "./pages/tools/RetrieveResults";
 import { topNav, toolsMenu } from "./data/mockStats";
 
 function App() {
@@ -79,13 +80,15 @@ function App() {
         return <Blast {...commonPageProps} />;
       case "GeneEditor":
         return <GeneEditor {...commonPageProps} />;
+      case "RetrieveResults":
+        return <RetrieveResults {...commonPageProps} />;
       default:
         return <Home {...commonPageProps} />;
     }
   }, [page, globalSearch, selectedBrowseRow, searchQuery]);
 
   return (
-    <div className="min-h-screen bg-[#f5f7f5] text-slate-800">
+    <div className="flex min-h-screen flex-col bg-[#f5f7f5] text-slate-800">
       <Header
         page={page}
         setPage={setPage}
@@ -95,7 +98,7 @@ function App() {
         topNav={topNav}
         toolsMenu={toolsMenu}
       />
-      <main className="mx-auto max-w-7xl px-4 pb-16 pt-28 md:px-6">{CurrentPage}</main>
+      <main className="flex-1 px-4 pb-16 pt-28 md:px-6 lg:px-8">{CurrentPage}</main>
       <Footer setPage={setPage} />
     </div>
   );
